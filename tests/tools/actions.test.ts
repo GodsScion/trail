@@ -71,4 +71,19 @@ describe('Actions', () => {
     const r = await actions.click({ intent: 'Submit', hint: 'role=button[name="Submit application"]' });
     expect(r.ok).toBe(true);
   });
+
+  it('refuses a raw snapshot without a narrow scope', async () => {
+    const { driver, actions } = mk();
+    await expect(actions.snapshot('raw')).rejects.toThrow(/narrow scope/);
+    await expect(actions.snapshot('raw', 'css=body')).rejects.toThrow(/narrow scope/);
+    await expect(actions.snapshot('raw', 'css=html')).rejects.toThrow(/narrow scope/);
+    // A scope that is not a locator at all is refused too, never silently widened.
+    await expect(actions.snapshot('raw', 'body')).rejects.toThrow();
+    expect(driver.kinds()).not.toContain('raw_html');
+  });
+
+  it('allows a raw snapshot of a narrow scope', async () => {
+    const { actions } = mk({ raw_html: () => ({ kind: 'raw_html', html: '<form></form>' }) });
+    await expect(actions.snapshot('raw', 'css=#application')).resolves.toBe('<form></form>');
+  });
 });

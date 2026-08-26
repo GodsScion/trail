@@ -1,7 +1,7 @@
-import type { ActionResult, DriverRequest, Target } from '../protocol.js';
+import type { ActionResult, DriverRequest, Level, Target } from '../protocol.js';
 import type { Driver } from '../driver/types.js';
 import type { HintResolver, Resolution } from '../hints/resolve.js';
-import { serializeAria } from '../snapshot/aria.js';
+import { serializeAria, isWholePageScope } from '../snapshot/aria.js';
 import { diffSnapshots } from '../snapshot/diff.js';
 
 export interface ActionDeps {
@@ -67,6 +67,21 @@ export class Actions {
 
   #blocked(reason: string): ActionResult {
     return { ok: false, blocked: true, reason, screenshot: '' };
+  }
+
+  /** `raw` is scope-only. A whole-page scope is refused at this layer too. */
+  async snapshot(level: Level, scope?: string): Promise<string> {
+    if (level === 'raw') {
+      if (!scope || isWholePageScope(scope)) {
+        throw new Error('raw snapshots require a narrow scope; whole-page source is not available');
+      }
+      const res = await this.#d.driver.send({ kind: 'raw_html', scope });
+      return res.kind === 'raw_html' ? res.html : '';
+    }
+    const res = await this.#d.driver.send({ kind: 'aria_tree', scope });
+    if (res.kind !== 'aria_tree') return '';
+    this.#d.resolver.indexRefs(res.root);
+    return serializeAria(res.root, level);
   }
 
   click(t: Target, confirm?: boolean): Promise<ActionResult> {
