@@ -87,6 +87,17 @@ describe('criterion 2: a warm run costs under 10% of a cold run', () => {
 
       // This is the thesis. If it fails, the workflow layer is not earning
       // its complexity and the design needs rethinking — not a bigger number.
+      //
+      // MEASURED 2026-08-26, real Chrome: cold 80, warm 176, ratio 2.200. RED.
+      // Cause: ariaWalker's ref store persists across walks and pushes on every
+      // walk, so each aria_tree call renumbers every interactive node (e0..e4,
+      // then e5..e9, then e10..e14). Actions.#act diffs a full tree taken before
+      // against a full tree taken after, so every interactive line reads as
+      // changed purely because its ref moved — the diff reproduces the page's
+      // whole interactive surface on each action instead of the one changed
+      // line. Two decisions that are individually sound (never reuse a ref so a
+      // stale one fails loudly; return a diff instead of a snapshot) cancel each
+      // other out. Do not move the threshold; fix the ref churn.
       expect(cold).toBeGreaterThan(0);
       expect(warm).toBeLessThan(cold * 0.1);
     });
