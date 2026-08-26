@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+  <head><meta charset="utf-8" /><title>Senior Software Engineer — Acme Robotics</title></head>
+  <body>
+    <!--
+      A full Greenhouse application, modelled on the real thing: the standard
+      profile fields, an employer's custom question block, and the US voluntary
+      self-identification block. No filler: every control below appears on real
+      postings. Deliberately carries NO job-description prose, so the cold
+      snapshot measures the form's interactive surface and nothing else.
+    -->
+    <h1>Senior Software Engineer</h1>
+    <form id="application">
+      <h3>Apply for this Job</h3>
+
+      <label for="first_name">First Name</label>
+      <input id="first_name" name="first_name" type="text" required />
+
+      <label for="last_name">Last Name</label>
+      <input id="last_name" name="last_name" type="text" required />
+
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" required />
+
+      <label for="phone">Phone</label>
+      <input id="phone" name="phone" type="tel" />
+
+      <label for="resume">Resume/CV</label>
+      <input id="resume" name="resume" type="file" required />
+
+      <label for="cover_letter">Cover Letter</label>
+      <input id="cover_letter" name="cover_letter" type="file" />
+
+      <label for="linkedin">LinkedIn Profile</label>
+      <input id="linkedin" name="linkedin" type="url" />
+
+      <label for="github">GitHub Profile</label>
+      <input id="github" name="github" type="url" />
+
+      <label for="website">Personal Website</label>
+      <input id="website" name="website" type="url" />
+
+      <label for="company">Current Company</label>
+      <input id="company" name="company" type="text" />
+
+      <label for="title">Current Title</label>
+      <input id="title" name="title" type="text" />
+
+      <label for="source">How did you hear about us?</label>
+      <select id="source" name="source">
+        <option value="">Please select</option>
+        <option value="linkedin">LinkedIn</option>
+        <option value="job_board">Job board</option>
+        <option value="referral">Referral from an employee</option>
+        <option value="recruiter">Recruiter outreach</option>
+        <option value="event">Conference or meetup</option>
+        <option value="careers">Our careers page</option>
+        <option value="other">Other</option>
+      </select>
+
+      <label for="work_auth">Are you legally authorized to work in the United States?</label>
+      <select id="work_auth" name="work_auth" required>
+        <option value="">Please select</option>
+        <option value="yes">Yes</option>
+        <option value="no">No</option>
+      </select>
+
+      <label for="sponsorship">Will you now or in the future require visa sponsorship?</label>
+      <select id="sponsorship" name="sponsorship" required>
+        <option value="">Please select</option>
+        <option value="yes">Yes</option>
+        <option value="no">No</option>
+      </select>
+
+      <label for="location">What city and state (or country) are you based in?</label>
+      <input id="location" name="location" type="text" required />
+
+      <label for="compensation">What are your compensation expectations for this role?</label>
+      <input id="compensation" name="compensation" type="text" />
+
+      <label for="start_date">What is your earliest available start date?</label>
+      <input id="start_date" name="start_date" type="text" />
+
+      <label for="experience">How many years of professional software engineering experience do you have?</label>
+      <select id="experience" name="experience">
+        <option value="">Please select</option>
+        <option value="0">Less than 2</option>
+        <option value="2">2-4</option>
+        <option value="5">5-7</option>
+        <option value="8">8-11</option>
+        <option value="12">12 or more</option>
+      </select>
+
+      <label for="motivation">Why do you want to work at Acme Robotics?</label>
+      <textarea id="motivation" name="motivation" rows="4"></textarea>
+
+      <label for="system">Describe a system you designed and shipped end to end.</label>
+      <textarea id="system" name="system" rows="4"></textarea>
+
+      <label for="previous">Have you previously applied to or worked at Acme Robotics?</label>
+      <select id="previous" name="previous">
+        <option value="">Please select</option>
+        <option value="yes">Yes</option>
+        <option value="no">No</option>
+      </select>
+
+      <h3>U.S. Equal Employment Opportunity Information</h3>
+      <p>Completion is voluntary and will not subject you to adverse treatment.</p>
+
+      <label for="gender">Gender</label>
+      <select id="gender" name="gender">
+        <option value="">Please select</option>
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+        <option value="decline">Decline To Self Identify</option>
+      </select>
+
+      <label for="race">Race &amp; Ethnicity</label>
+      <select id="race" name="race">
+        <option value="">Please select</option>
+        <option value="native">American Indian or Alaska Native</option>
+        <option value="asian">Asian</option>
+        <option value="black">Black or African American</option>
+        <option value="hispanic">Hispanic or Latino</option>
+        <option value="pacific">Native Hawaiian or Other Pacific Islander</option>
+        <option value="white">White</option>
+        <option value="two">Two or More Races</option>
+        <option value="decline">Decline To Self Identify</option>
+      </select>
+
+      <label for="veteran">Veteran Status</label>
+      <select id="veteran" name="veteran">
+        <option value="">Please select</option>
+        <option value="protected">I identify as one or more of the classifications of a protected veteran</option>
+        <option value="not">I am not a protected veteran</option>
+        <option value="decline">I don't wish to answer</option>
+      </select>
+
+      <label for="disability">Disability Status</label>
+      <select id="disability" name="disability">
+        <option value="">Please select</option>
+        <option value="yes">Yes, I have a disability, or have had one in the past</option>
+        <option value="no">No, I do not have a disability and have not had one in the past</option>
+        <option value="decline">I do not want to answer</option>
+      </select>
+
+      <label for="consent">I have read and agree to the Acme Robotics privacy policy.</label>
+      <input id="consent" name="consent" type="checkbox" />
+
+      <button type="submit">Submit application</button>
+    </form>
+  </body>
+</html>

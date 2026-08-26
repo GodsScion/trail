@@ -89,15 +89,57 @@ describe('criterion 2: a warm run costs under 10% of a cold run', () => {
       // its complexity and the design needs rethinking — not a bigger number.
       //
       // MEASURED 2026-08-26, real Chrome: cold 80, warm 176, ratio 2.200. RED.
-      // Cause: ariaWalker's ref store persists across walks and pushes on every
-      // walk, so each aria_tree call renumbers every interactive node (e0..e4,
-      // then e5..e9, then e10..e14). Actions.#act diffs a full tree taken before
-      // against a full tree taken after, so every interactive line reads as
-      // changed purely because its ref moved — the diff reproduces the page's
-      // whole interactive surface on each action instead of the one changed
-      // line. Two decisions that are individually sound (never reuse a ref so a
-      // stale one fails loudly; return a diff instead of a snapshot) cancel each
-      // other out. Do not move the threshold; fix the ref churn.
+      // Cause: ariaWalker's ref store persisted across walks and pushed on every
+      // walk, so each aria_tree call renumbered every interactive node. Fixed —
+      // the store is now an identity map within a generation.
+      //
+      // RE-MEASURED after that fix: cold 80, warm 43, ratio 0.537. STILL RED,
+      // and now for a reason this fixture cannot fix. Reporting one changed
+      // field costs an irreducible ~22 tokens ("ok\nchanged:\n- <line>\n+
+      // <line>"), and this five-field form's ENTIRE cold snapshot is 80 tokens.
+      // One field is 27% of the page, so no diff implementation can reach 10%
+      // here. The criterion is about a real application form; see the
+      // greenhouse-full.html measurement below, which is the honest test of the
+      // thesis. This case stays, and stays red, as the floor: it records what
+      // the diff costs when there is nothing to save.
+      expect(cold).toBeGreaterThan(0);
+      expect(warm).toBeLessThan(cold * 0.1);
+    });
+  });
+});
+
+describe('criterion 2 on a real application form: a warm run costs under 10% of a cold run', () => {
+  it('measures cold vs warm token cost on a full Greenhouse application',
+    { timeout: 180_000 }, async () => {
+    await withSession(async (s) => {
+      await s.actions.navigate(`${s.url}/greenhouse-full.html`);
+
+      // COLD: no hints. The agent must snapshot the whole application to find
+      // anything — which on a real posting is the entire interactive surface.
+      const snapshot = await s.actions.snapshot('full');
+      s.ledger.record('browser_snapshot', snapshot);
+      const interactive = (snapshot.match(/\[e\d+\]/g) ?? []).length;
+
+      // WARM: hints hit, so no snapshot is fetched — each action pays only for
+      // the diff of the one field it changed.
+      for (const hint of [
+        'role=textbox[name="First Name"]',
+        'role=textbox[name="Last Name"]',
+      ]) {
+        const r = await s.actions.type({ intent: 'field', hint }, 'x');
+        expect(r.ok).toBe(true);
+        s.ledger.record('browser_type', renderResult(r));
+      }
+
+      const byTool = s.ledger.byTool();
+      const cold = byTool['browser_snapshot'] ?? 0;
+      const warm = byTool['browser_type'] ?? 0;
+      // eslint-disable-next-line no-console
+      console.log(
+        `criterion 2 (realistic form, ${interactive} interactive nodes) — ` +
+          `cold: ${cold} tokens, warm: ${warm} tokens, ratio: ${(warm / cold).toFixed(3)}`,
+      );
+
       expect(cold).toBeGreaterThan(0);
       expect(warm).toBeLessThan(cold * 0.1);
     });
