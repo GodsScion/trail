@@ -1,0 +1,26 @@
+{
+  "name": "trail",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Browser tools for AI agents, with a self-healing workflow layer",
+  "license": "MIT",
+  "bin": { "trail": "./dist/server.js" },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "gray-matter": "^4.0.3",
+    "patchright": "^1.62.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.3.0",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.11"
+  },
+  "engines": { "node": ">=20" }
+}
