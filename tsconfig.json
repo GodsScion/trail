@@ -16,7 +16,10 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "exactOptionalPropertyTypes": false
+    "exactOptionalPropertyTypes": false,
+    "types": [
+      "node"
+    ]
   },
   "include": [
     "src/**/*"

@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head><meta charset="utf-8" /><title>Fixture Form</title></head>
+  <body>
+    <header><a href="/index.html">Fixture Boards</a></header>
+    <main>
+      <h1>Senior Engineer</h1>
+      <p>We are hiring a senior engineer to work on browser automation.</p>
+      <form id="application">
+        <label for="first">First Name</label>
+        <input id="first" name="first" type="text" />
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" />
+        <label for="src">How did you hear about us?</label>
+        <select id="src" name="src">
+          <option value="">Select…</option>
+          <option value="friend">A friend</option>
+          <option value="search">Search</option>
+        </select>
+        <label for="resume">Resume</label>
+        <input id="resume" name="resume" type="file" />
+        <button type="button" id="submit">Submit Application</button>
+      </form>
+      <div id="status"></div>
+      <canvas id="board" width="40" height="40"></canvas>
+      <p hidden>Hidden paragraph</p>
+      <span aria-hidden="true">Decorative</span>
+      <!-- Stealth probe. Hidden so it never reaches the ARIA tree; read via raw_html. -->
+      <p id="webdriver" hidden></p>
+    </main>
+    <script>
+      document.getElementById('submit').addEventListener('click', () => {
+        document.getElementById('status').textContent = 'Application received';
+      });
+      document.getElementById('webdriver').textContent = String(navigator.webdriver);
+    </script>
+  </body>
+</html>
