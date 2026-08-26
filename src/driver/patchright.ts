@@ -46,12 +46,18 @@ function ariaWalker(args: { key: string; root: Node | null }): WalkResult {
   };
 
   // The store SURVIVES repeated walks within a page load and is wiped by
-  // navigation. Ref indices are therefore absolute and never reused, so a stale
-  // ref fails loudly with `detached` instead of silently hitting a different
-  // element.
+  // navigation. Within a page load it is an IDENTITY MAP: an element already in
+  // the store keeps the index it was first given, so walking an unchanged page
+  // twice yields identical refs and a post-action diff shows only what really
+  // changed. An element not yet seen always gets a fresh index — indices are
+  // allocated monotonically and never recycled — so a stale ref still fails
+  // loudly with `detached` instead of silently hitting a different element.
   const w = window as unknown as Record<string, unknown>;
   const store: Element[] = (w[args.key] as Element[] | undefined) ?? [];
   w[args.key] = store;
+  const indexOfEl: Map<Element, number> =
+    (w[`${args.key}_ix`] as Map<Element, number> | undefined) ?? new Map<Element, number>();
+  w[`${args.key}_ix`] = indexOfEl;
 
   const norm = (s: string): string => s.replace(/\s+/g, ' ').trim();
   const clip = (s: string): string => (s.length > 200 ? `${s.slice(0, 200)}…` : s);
@@ -210,8 +216,12 @@ function ariaWalker(args: { key: string; root: Node | null }): WalkResult {
 
     const node: AriaNode = { ref: null, role, name, children };
     if (interactive) {
-      store.push(el);
-      node.ref = `e${store.length - 1}`;
+      let index = indexOfEl.get(el);
+      if (index === undefined) {
+        index = store.push(el) - 1;
+        indexOfEl.set(el, index);
+      }
+      node.ref = `e${index}`;
     }
     if (role === 'text' || (text !== '' && text !== name)) node.text = text;
     if (role === 'heading') node.level = Number(/^h([1-6])$/.exec(el.tagName.toLowerCase())?.[1] ?? el.getAttribute('aria-level') ?? 2);

@@ -51,6 +51,23 @@ describe.skipIf(!RUN)('patchright driver', () => {
     expect(res.url).toBe(`${server.url}/form.html`);
   });
 
+  // Ref churn regression: the store persists across walks so indices are never
+  // recycled, but it must also be an identity map — the same element has to keep
+  // the same ref, or every post-action diff reproduces the whole page.
+  it('keeps refs stable across two consecutive aria_tree calls on an unchanged page', async () => {
+    const refsOf = async (): Promise<Array<[string, string]>> => {
+      const res = await driver.send({ kind: 'aria_tree' });
+      if (res.kind !== 'aria_tree') throw new Error(`expected aria_tree, got ${res.kind}`);
+      return flatten(res.root)
+        .filter((n) => n.ref !== null)
+        .map((n) => [`${n.role}:${n.name}`, n.ref!] as [string, string]);
+    };
+
+    const first = await refsOf();
+    expect(first.length).toBeGreaterThan(0);
+    expect(await refsOf()).toEqual(first);
+  });
+
   it('omits hidden and aria-hidden content', async () => {
     const res = await driver.send({ kind: 'aria_tree' });
     if (res.kind !== 'aria_tree') throw new Error('expected aria_tree');
