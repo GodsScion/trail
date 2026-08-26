@@ -5,22 +5,28 @@
   "type": "module",
   "description": "Browser tools for AI agents, with a self-healing workflow layer",
   "license": "MIT",
-  "bin": { "trail": "./dist/server.js" },
+  "bin": {
+    "trail-mcp": "./dist/server.js"
+  },
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:e2e": "vitest run tests/e2e"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",
     "gray-matter": "^4.0.3",
-    "patchright": "^1.62.1"
+    "patchright": "^1.62.1",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/node": "^26.3.0",
     "typescript": "^7.0.2",
     "vitest": "^4.1.11"
   },
-  "engines": { "node": ">=20" }
+  "engines": {
+    "node": ">=20"
+  }
 }
