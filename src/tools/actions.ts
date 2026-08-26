@@ -1,4 +1,5 @@
-import type { ActionResult, DriverRequest, Level, Target } from '../protocol.js';
+import type { ActionResult, DriverRequest, Level, ScrollDir, Target } from '../protocol.js';
+import { parseWaitSpec } from '../protocol.js';
 import type { Driver } from '../driver/types.js';
 import type { HintResolver, Resolution } from '../hints/resolve.js';
 import { serializeAria, isWholePageScope } from '../snapshot/aria.js';
@@ -69,6 +70,18 @@ export class Actions {
     return { ok: false, blocked: true, reason, screenshot: '' };
   }
 
+  async navigate(url: string): Promise<ActionResult> {
+    const res = await this.#d.driver.send({ kind: 'navigate', url });
+    if (res.kind === 'error') return this.#blocked(res.message);
+    this.#d.resolver.invalidate();
+    return { ok: true };
+  }
+
+  async wait(spec: string): Promise<ActionResult> {
+    const res = await this.#d.driver.send({ kind: 'wait', spec: parseWaitSpec(spec) });
+    return res.kind === 'error' ? this.#blocked(res.message) : { ok: true };
+  }
+
   /** `raw` is scope-only. A whole-page scope is refused at this layer too. */
   async snapshot(level: Level, scope?: string): Promise<string> {
     if (level === 'raw') {
@@ -84,7 +97,51 @@ export class Actions {
     return serializeAria(res.root, level);
   }
 
+  async screenshot(scope?: string, fullPage?: boolean): Promise<string> {
+    const res = await this.#d.driver.send({ kind: 'screenshot', scope, full_page: fullPage });
+    return res.kind === 'screenshot' ? res.path : '';
+  }
+
   click(t: Target, confirm?: boolean): Promise<ActionResult> {
     return this.#act(t, (ref) => ({ kind: 'click', ref }), { confirm, kind: 'click' });
+  }
+
+  type(t: Target, text: string): Promise<ActionResult> {
+    return this.#act(t, (ref) => ({ kind: 'type', ref, text, clear: true }), { kind: 'type' });
+  }
+
+  select(t: Target, values: string[]): Promise<ActionResult> {
+    return this.#act(t, (ref) => ({ kind: 'select', ref, values }), { kind: 'select' });
+  }
+
+  upload(t: Target, paths: string[]): Promise<ActionResult> {
+    return this.#act(t, (ref) => ({ kind: 'upload', ref, paths }), { kind: 'upload' });
+  }
+
+  async press(keys: string): Promise<ActionResult> {
+    if (this.#d.pace) await this.#d.pace('press');
+    const res = await this.#d.driver.send({ kind: 'press', keys });
+    return res.kind === 'error' ? this.#blocked(res.message) : { ok: true };
+  }
+
+  async scroll(dir: ScrollDir, amount: number, t?: Target): Promise<ActionResult> {
+    if (!t) {
+      const res = await this.#d.driver.send({ kind: 'scroll', dir, amount });
+      return res.kind === 'error' ? this.#blocked(res.message) : { ok: true };
+    }
+    return this.#act(t, (ref) => ({ kind: 'scroll', ref, dir, amount }), { kind: 'scroll' });
+  }
+
+  async drag(from: Target, to: Target): Promise<ActionResult> {
+    const a = await this.#d.resolver.resolve(from);
+    if (a.kind === 'miss') return { ok: false, hint_miss: true, snapshot: a.snapshot, scope: a.scope };
+    if (a.kind === 'error') return this.#blocked(a.message);
+    const b = await this.#d.resolver.resolve(to);
+    if (b.kind === 'miss') return { ok: false, hint_miss: true, snapshot: b.snapshot, scope: b.scope };
+    if (b.kind === 'error') return this.#blocked(b.message);
+
+    if (this.#d.pace) await this.#d.pace('drag');
+    const res = await this.#d.driver.send({ kind: 'drag', from_ref: a.ref, to_ref: b.ref });
+    return res.kind === 'error' ? this.#blocked(res.message) : { ok: true };
   }
 }
