@@ -11,6 +11,14 @@ export interface ActionDeps {
   pace?: (kind: string) => Promise<void>;
 }
 
+export const SUBMIT_ROLES: ReadonlySet<string> = new Set(['button', 'link']);
+export const SUBMIT_NAME_RE =
+  /\b(submit|apply|send|confirm|finish|complete|place order|sign up)\b/i;
+
+export function isSubmitLike(role: string, name: string): boolean {
+  return SUBMIT_ROLES.has(role) && SUBMIT_NAME_RE.test(name);
+}
+
 export class Actions {
   #d: ActionDeps;
   constructor(deps: ActionDeps) { this.#d = deps; }
@@ -36,6 +44,16 @@ export class Actions {
       return { ok: false, hint_miss: true, snapshot: r.snapshot, scope: r.scope };
     }
     if (r.kind === 'error') return this.#blocked(r.message);
+
+    if (this.#d.confirmSubmit && opts.confirm !== true && isSubmitLike(r.role, r.name)) {
+      const shot = await this.#d.driver.send({ kind: 'screenshot' });
+      return {
+        ok: false,
+        needs_confirm: true,
+        description: `${r.role} "${r.name}" looks like a submit action. Re-call with confirm: true to proceed.`,
+        screenshot: shot.kind === 'screenshot' ? shot.path : '',
+      };
+    }
 
     const before = await this.#tree();
     if (this.#d.pace) await this.#d.pace(opts.kind);
