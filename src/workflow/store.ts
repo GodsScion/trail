@@ -1,6 +1,3 @@
-/// <reference types="node" />
-// TypeScript 7.0.2 does not auto-discover node_modules/@types here, so node
-// builtins go untyped without this. Hoist to `types: ["node"]` in tsconfig.
 import { readdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { LoadedWorkflow, Workflow } from '../protocol.js';
