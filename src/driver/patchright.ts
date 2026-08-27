@@ -517,8 +517,15 @@ export async function launchPatchrightDriver(opts: DriverLaunchOptions): Promise
     channel: opts.channel ?? 'chrome', // real installed Chrome, never bundled Chromium
     headless: false,
     viewport: null,
-    // No stealth args: Patchright already patches navigator.webdriver and avoids
-    // the Runtime.enable CDP leak. Extra args are their own fingerprint.
+    // Playwright defaults chromiumSandbox to FALSE, which injects --no-sandbox.
+    // That does two bad things here: Chrome shows the user a yellow "unsupported
+    // command-line flag" banner in their own browser, and --no-sandbox is a
+    // well-known automation fingerprint. Playwright only disables the sandbox
+    // for CI/Docker convenience, which does not apply to a local real browser,
+    // so turning it back on is both quieter and more secure.
+    chromiumSandbox: true,
+    // No stealth args beyond that: Patchright already patches navigator.webdriver
+    // and avoids the Runtime.enable CDP leak. Extra args are their own fingerprint.
   });
   const timeout = opts.defaultTimeoutMs ?? 15_000;
   context.setDefaultTimeout(timeout);

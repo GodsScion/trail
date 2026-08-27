@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { mkdtemp, readFile } from 'node:fs/promises';
+import { execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -164,5 +165,19 @@ describe.skipIf(!RUN)('patchright driver', () => {
     const res = await driver.send({ kind: 'raw_html', scope: 'css=#webdriver' });
     if (res.kind !== 'raw_html') throw new Error(`expected raw_html, got ${res.kind}`);
     expect(res.html).toContain('>false<');
+  });
+
+  it('launches Chrome without --no-sandbox', () => {
+    // Playwright defaults chromiumSandbox:false, which injects --no-sandbox.
+    // Chrome then shows the user a yellow "unsupported command-line flag"
+    // banner in their own browser, and --no-sandbox is a known automation
+    // fingerprint. Both are unacceptable for a tool whose entire driver
+    // choice was made for stealth, so the driver sets chromiumSandbox: true.
+    const ps = execFileSync('ps', ['-Ao', 'args']).toString();
+    const line = ps.split('\n').find(
+      (l) => /Google Chrome/i.test(l) && /--user-data-dir/.test(l) && !/grep/.test(l),
+    );
+    expect(line, 'no driven Chrome process found').toBeTruthy();
+    expect(line).not.toMatch(/--no-sandbox/);
   });
 });
