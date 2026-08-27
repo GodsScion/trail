@@ -29,5 +29,6 @@
   },
   "engines": {
     "node": ">=20"
-  }
+  },
+  "author": "Sai Vignesh Golla (GodsScion) <saivigneshgolla@outlook.com>"
 }
