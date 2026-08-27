@@ -167,17 +167,31 @@ describe.skipIf(!RUN)('patchright driver', () => {
     expect(res.html).toContain('>false<');
   });
 
-  it('launches Chrome without --no-sandbox', () => {
-    // Playwright defaults chromiumSandbox:false, which injects --no-sandbox.
-    // Chrome then shows the user a yellow "unsupported command-line flag"
-    // banner in their own browser, and --no-sandbox is a known automation
-    // fingerprint. Both are unacceptable for a tool whose entire driver
-    // choice was made for stealth, so the driver sets chromiumSandbox: true.
+  it('launches Chrome with the right flag set', () => {
+    // Three coupled invariants, all measured on Chrome 149:
+    //
+    // --no-sandbox            MUST BE ABSENT. Playwright defaults
+    //   chromiumSandbox:false and injects it. It triggers Chrome's yellow
+    //   "unsupported command-line flag" banner AND is a known automation
+    //   fingerprint.
+    //
+    // --disable-blink-features=AutomationControlled  MUST BE PRESENT.
+    //   It is load-bearing: removing it flips navigator.webdriver from false
+    //   to TRUE. It is tempting to drop it because Chrome also flags it in the
+    //   banner — do not. Suppress the banner with --test-type instead.
+    //
+    // --test-type             MUST BE PRESENT. Suppresses that banner while
+    //   measurably preserving webdriver=false, real Chrome brands and plugins.
     const ps = execFileSync('ps', ['-Ao', 'args']).toString();
     const line = ps.split('\n').find(
       (l) => /Google Chrome/i.test(l) && /--user-data-dir/.test(l) && !/grep/.test(l),
     );
     expect(line, 'no driven Chrome process found').toBeTruthy();
-    expect(line).not.toMatch(/--no-sandbox/);
+
+    expect(line, '--no-sandbox is a fingerprint and shows a banner').not.toMatch(/--no-sandbox/);
+    expect(line, 'removing this flips navigator.webdriver to true')
+      .toMatch(/--disable-blink-features=AutomationControlled/);
+    expect(line, 'without this Chrome shows an unsupported-flag banner')
+      .toMatch(/--test-type/);
   });
 });

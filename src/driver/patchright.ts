@@ -524,8 +524,19 @@ export async function launchPatchrightDriver(opts: DriverLaunchOptions): Promise
     // for CI/Docker convenience, which does not apply to a local real browser,
     // so turning it back on is both quieter and more secure.
     chromiumSandbox: true,
-    // No stealth args beyond that: Patchright already patches navigator.webdriver
-    // and avoids the Runtime.enable CDP leak. Extra args are their own fingerprint.
+    // Chrome shows the user a yellow "unsupported command-line flag" banner for
+    // --disable-blink-features=AutomationControlled, which Patchright injects.
+    // We cannot simply drop that flag: measured on Chrome 149, removing it flips
+    // navigator.webdriver from false to TRUE, handing back the single most
+    // checked automation signal. --test-type suppresses the banner instead, and
+    // measurably preserves webdriver=false, real Chrome brands, and plugins.
+    //
+    // This is the one place we add an arg. The tradeoff is deliberate: the
+    // banner is visible to the user in their own browser, whereas --test-type
+    // is not exposed to JavaScript, so it is invisible to web-based anti-bot —
+    // the actual threat model. Anything reading process args already owns the
+    // machine. Drop this line if you would rather have the minimal flag set.
+    args: ['--test-type'],
   });
   const timeout = opts.defaultTimeoutMs ?? 15_000;
   context.setDefaultTimeout(timeout);
