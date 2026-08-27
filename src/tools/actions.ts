@@ -24,6 +24,13 @@ export class Actions {
   #d: ActionDeps;
   constructor(deps: ActionDeps) { this.#d = deps; }
 
+  /**
+   * Per-workflow opt-out, set by workflow_load from `confirm_submit`.
+   * Default stays ON: a workflow must explicitly ask to disable the gate,
+   * and an absent frontmatter key parses to true.
+   */
+  setConfirmSubmit(on: boolean): void { this.#d.confirmSubmit = on; }
+
   async #tree(scope?: string): Promise<string> {
     const res = await this.#d.driver.send({ kind: 'aria_tree', scope });
     if (res.kind !== 'aria_tree') return '';

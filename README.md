@@ -11,12 +11,18 @@ chrome-devtools-mcp, browser-use and others all ship good, free, token-efficient
 page snapshots. `trail` does not try to win on that.
 
 The bet here is that **primitives are commodity and encoded site knowledge is
-not.** How Workday's wizard actually behaves, which Greenhouse fields are custom,
-where the real apply button hides — that compounds with every contributor and no
-browser vendor will build it.
+not.** How a given site's multi-step wizard actually behaves, which of its fields
+are custom, where it hides the button you need — that compounds with every
+contributor, and no browser vendor will build it.
 
 So the unit of value is a **workflow**: a markdown file with natural-language
-steps and machine-written selector hints inline.
+steps and machine-written selector hints inline. Anything an agent does more than
+once on a site it has seen before is a candidate — QA-ing your own frontend after
+a change, pulling structured data out of a dashboard, filling a long form, or
+walking a checkout.
+
+The example below is a job application because that is a form long enough to make
+the economics obvious, not because the tool is job-specific.
 
 ```markdown
 ---
@@ -112,9 +118,14 @@ These are core behaviours, not settings:
 - **Block detection** stops and hands off to a human instead of half-completing
   a flow.
 
-The largest real risk to someone using this is not fingerprinting — it is an
-account ban from behavioural volume. A banned LinkedIn is strictly worse than
-never having installed the tool. The defaults reflect that.
+Every one of these is **tunable per workflow** — `confirm_submit: false` and an
+absent `rate_limit` opt out — but all of them default to the cautious setting,
+and an absent key parses to the safe value rather than the permissive one.
+
+The reasoning: when automating an authenticated site, the largest real risk is
+usually not fingerprinting but account-level throttling or suspension from
+behavioural volume. Losing the account is generally worse than the task going
+unfinished, so the defaults are conservative and you opt into speed deliberately.
 
 ## Why real Chrome, not bundled Chromium
 
@@ -147,3 +158,7 @@ hardware-verified driver facts in [`docs/DRIVER-FINDINGS.md`](docs/DRIVER-FINDIN
 Early. The tool surface and workflow format are settled; the workflow library is
 not yet a thing that exists. Contributions of workflows are more valuable than
 contributions of code.
+
+`trail` is general-purpose agent browser tooling. It is a separate project from
+[Auto_job_applier_linkedIn](https://github.com/GodsScion/Auto_job_applier_linkedIn),
+which remains the standalone consumer tool for job applications.

@@ -245,3 +245,37 @@ describe('Actions', () => {
     expect((r as any).diff).toContain('value="Ada"');
   });
 });
+
+describe('setConfirmSubmit — per-workflow opt-out', () => {
+  /** Resolves any hint to a submit-like button, i.e. the gated element. */
+  const submitBtn: FakeHandlers = {
+    query: () => ({
+      kind: 'query',
+      matches: [{ ref: 'q1', role: 'button', name: 'Submit application' }],
+      generation: 1,
+    }),
+    screenshot: () => ({ kind: 'screenshot', path: '/tmp/s.png' }),
+  };
+  const submit = { intent: 'Submit', hint: 'role=button[name="Submit application"]' };
+
+  it('gates by default, and a workflow can turn the gate off', async () => {
+    const { actions } = mk(submitBtn);
+
+    const gated = await actions.click(submit);
+    expect((gated as { needs_confirm?: true }).needs_confirm).toBe(true);
+
+    // What workflow_load does when frontmatter says `confirm_submit: false`.
+    actions.setConfirmSubmit(false);
+    const ungated = await actions.click(submit);
+    expect(ungated.ok).toBe(true);
+  });
+
+  it('can turn the gate back on, so one workflow cannot disarm the next', async () => {
+    const { actions } = mk(submitBtn, false);
+    expect((await actions.click(submit)).ok).toBe(true);
+
+    actions.setConfirmSubmit(true);
+    const gated = await actions.click(submit);
+    expect((gated as { needs_confirm?: true }).needs_confirm).toBe(true);
+  });
+});

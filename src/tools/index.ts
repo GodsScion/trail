@@ -160,6 +160,7 @@ export function registerTools(server: McpServer, ctx: ToolContext): void {
     const all = await loadWorkflows(ctx.workflowsDir);
     const wf = name ? findWorkflowByName(all, name) : url ? matchWorkflow(all, url) : null;
     if (!wf) return emit('workflow_load', 'no matching workflow');
+    ctx.actions.setConfirmSubmit(wf.frontmatter.confirm_submit);
     ctx.limiter.configure(
       url ? domainOf(url) : matchDomain(wf.frontmatter.match),
       wf.frontmatter.rate_limit,
