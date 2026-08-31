@@ -7,3 +7,9 @@ dist/
 
 # Session transcripts — contain local paths and personal email. Never publish.
 .conversations/
+
+# Internal design docs and agent context — kept local, not published.
+# Nothing secret; they are private thinking (implementation plans, strategy
+# notes, session handoff). Publish deliberately later if ever.
+CLAUDE.md
+docs/
