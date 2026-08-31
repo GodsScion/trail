@@ -149,9 +149,9 @@ npm run typecheck:tests
 npm run test:e2e      # the four success criteria
 ```
 
-Design notes live in [`docs/superpowers/specs/`](docs/superpowers/specs/), the
-build plan in [`docs/superpowers/plans/`](docs/superpowers/plans/), and
-hardware-verified driver facts in [`docs/DRIVER-FINDINGS.md`](docs/DRIVER-FINDINGS.md).
+[`tests/e2e/criteria.test.ts`](tests/e2e/criteria.test.ts) is the executable
+spec: it measures the cold-vs-warm token ratio and exercises the self-healing
+path against real Chrome.
 
 ## Status
 
