@@ -4,3 +4,6 @@ dist/
 .env
 .DS_Store
 .claude/
+
+# Session transcripts — contain local paths and personal email. Never publish.
+.conversations/
